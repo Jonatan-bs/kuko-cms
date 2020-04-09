@@ -12,6 +12,7 @@ coverage
 build
 
 # misc
+server/public
 .DS_Store
 .env
 .env.local
