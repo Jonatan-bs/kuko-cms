@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const ImageLibrary = mongoose.models["imgLibrary"];
-
+// collectionInfo
 controller = {
   create: (req, res, next) => {
     let file = req.file;

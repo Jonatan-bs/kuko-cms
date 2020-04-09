@@ -16,4 +16,4 @@ const imgLibrarySchema = mongoose.Schema(
   { collection: "imgLibrary", timestamps: true }
 );
 
-module.exports = mongoose.model("imgLibrary", imgLibrarySchema);
+mongoose.model("imgLibrary", imgLibrarySchema);

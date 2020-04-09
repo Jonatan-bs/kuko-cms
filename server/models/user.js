@@ -32,4 +32,4 @@ UserSchema.methods.comparePassword = function (plaintext) {
   return bcrypt.compareSync(plaintext, this.password);
 };
 
-module.exports = mongoose.model("user", UserSchema, "user");
+mongoose.model("user", UserSchema, "user");

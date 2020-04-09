@@ -4,6 +4,7 @@ const router = express.Router();
 const userCtrl = require("../controllers/user");
 const userRoleCtrl = require("../controllers/userRole");
 const imageLibraryCtrl = require("../controllers/imageLibrary");
+const productCtrl = require("../controllers/product");
 
 // MULTER MIDDLEWARE
 const storage = multer.diskStorage({
@@ -69,5 +70,24 @@ router.post("/imageLibrary/update/:id", imageLibraryCtrl.update);
 
 // retrieve images
 router.post("/imageLibrary", imageLibraryCtrl.retrieve);
+
+/////////////////
+//// Products
+/////////////////
+
+// retrieve user collection
+router.get("/product", productCtrl.retrieve);
+
+// retrieve one user collection
+router.get("/product/:id", productCtrl.retrieveOne);
+
+// create Document
+router.post("/product/create", productCtrl.create);
+
+// delete Document
+router.post("/product/delete/:id", productCtrl.delete);
+
+// update Document
+router.post("/product/update/:id", productCtrl.update);
 
 module.exports = router;
