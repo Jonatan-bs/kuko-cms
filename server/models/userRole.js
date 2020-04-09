@@ -12,7 +12,7 @@ const PermissionSchema = mongoose.Schema({
 const UserRoleSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     description: { type: String, required: false, default: "" },
     permissions: { type: [PermissionSchema] },
   },

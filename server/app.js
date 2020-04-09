@@ -8,8 +8,14 @@ const logger = require("morgan"); // module for logging
 const router = require("./routes/router"); // Routing
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const dotenv = require("dotenv");
+const init = require("./init/init");
 
 var app = express();
+
+dotenv.config({
+  path: "./.env",
+});
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -36,6 +42,7 @@ mongoose
     useCreateIndex: true,
   })
   .then((res) => {
+    init();
     console.log("connected to database");
   })
   .catch((err) => console.log(err));
