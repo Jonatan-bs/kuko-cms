@@ -17,7 +17,6 @@ module.exports = {
   },
   login: async (req, res, next) => {
     req.body.email = req.body.email ? req.body.email.toLowerCase() : null;
-
     const verified = await handler.verifyUser(req);
     if (verified.success) {
       verified.user = {
@@ -25,7 +24,7 @@ module.exports = {
         firstname: verified.user.firstname,
         lastname: verified.user.lastname,
         email: verified.user.email,
-        todo: verified.user.todo,
+        permissions: verified.user.role.permissions,
       };
 
       res.status(200).json({ auth: true, user: verified.user });

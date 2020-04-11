@@ -36,7 +36,7 @@ router.post("/user/register", userCtrl.register);
 router.get("/user", userCtrl.retrieve);
 router.post("/user/login", userCtrl.login);
 router.post("/user/logout", userCtrl.logout);
-router.post("/user/auth", userCtrl.auth);
+router.get("/user/auth", userCtrl.auth);
 
 /////////////////
 //// USER ROLES
@@ -44,6 +44,9 @@ router.post("/user/auth", userCtrl.auth);
 
 // retrieve user userroles
 router.post("/userrole", userRoleCtrl.retrieve);
+
+// retrieve one user collection
+router.get("/userrole/:id", productCtrl.retrieveOne);
 
 // create user userrole
 router.post("/userrole/create", userRoleCtrl.create);
@@ -82,7 +85,7 @@ router.get("/product", productCtrl.retrieve);
 router.get("/product/:id", productCtrl.retrieveOne);
 
 // create Document
-router.post("/product/create", productCtrl.create);
+router.post("/product", productCtrl.create);
 
 // delete Document
 router.post("/product/delete/:id", productCtrl.delete);

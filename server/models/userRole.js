@@ -1,12 +1,13 @@
 const mongoose = require("mongoose");
 
 const PermissionSchema = mongoose.Schema({
-  collectionID: { type: String, required: true, default: false },
+  collectionNameID: { type: String, required: true, unique: true },
   find: { type: Boolean, required: true, default: false },
   findOne: { type: Boolean, required: true, default: false },
   create: { type: Boolean, required: true, default: false },
   delete: { type: Boolean, required: true, default: false },
   update: { type: Boolean, required: true, default: false },
+  _id: false,
 });
 
 const UserRoleSchema = mongoose.Schema(

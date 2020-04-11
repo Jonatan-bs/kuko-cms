@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const UserRoleModel = mongoose.models["userRole"];
 
-module.exports = () => {
+module.exports = async () => {
   UserRoleModel.find({ name: "Public" })
     .then((response) => response.length)
     .then((exists) => {
@@ -11,6 +11,16 @@ module.exports = () => {
           _id: new mongoose.Types.ObjectId(),
           name: "Public",
           description: "Not logged in",
+          permissions: [
+            {
+              collectionNameID: "products",
+              find: false,
+              findOne: false,
+              create: false,
+              delete: false,
+              update: false,
+            },
+          ],
         });
         return newDocument.save();
       }
@@ -26,6 +36,16 @@ module.exports = () => {
           _id: new mongoose.Types.ObjectId(),
           name: "Admin",
           description: "Administrator",
+          permissions: [
+            {
+              collectionNameID: "products",
+              find: true,
+              findOne: true,
+              create: true,
+              delete: true,
+              update: true,
+            },
+          ],
         });
         return newDocument.save();
       }

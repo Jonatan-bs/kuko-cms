@@ -1,0 +1,15 @@
+.Nav-main {
+  width: 200px;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: #121212;
+  color: #fff;
+  z-index: 50;
+}
+
+.Nav-main ul li {
+  box-sizing: border-box;
+  padding: 10px;
+}

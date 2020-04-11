@@ -5,16 +5,16 @@ controller = {
   create: (req, res, next) => {
     const newDocument = new UserRoleModel({
       _id: new mongoose.Types.ObjectId(),
-      ...req.body
+      ...req.body,
     });
     newDocument
       .save()
-      .then(response => {
+      .then((response) => {
         res.status("201").json({
-          message: "UserRole created"
+          message: "UserRole created",
         });
       })
-      .catch(err => {
+      .catch((err) => {
         res.status("500").json(err);
       });
   },
@@ -22,7 +22,7 @@ controller = {
     const id = req.params.id;
 
     UserRoleModel.findById(id)
-      .then(doc => {
+      .then((doc) => {
         for (const key in req.body) {
           if (req.body.hasOwnProperty(key)) {
             const field = req.body[key];
@@ -33,12 +33,12 @@ controller = {
         return doc.save();
       })
 
-      .then(document => {
+      .then((document) => {
         res.status("201").json({
-          message: "User role updated"
+          message: "User role updated",
         });
       })
-      .catch(err => res.status("500").json({ err }));
+      .catch((err) => res.status("500").json({ err }));
   },
   delete: (req, res, next) => {
     // const body = req.body;
@@ -60,10 +60,19 @@ controller = {
     const fields = body.fields ? body.fields : null;
 
     return UserRoleModel.find(query, fields, options)
-      .then(response => {
+      .then((response) => {
         res.status("201").json(response);
       })
       .catch(next);
-  }
+  },
+  retrieveOne: (req, res, next) => {
+    const id = req.params.id;
+
+    return UserRoleModel.findById(id)
+      .then((response) => {
+        res.status("200").json(response);
+      })
+      .catch(next);
+  },
 };
 module.exports = controller;

@@ -5,7 +5,11 @@ controller = {
   create: (req, res, next) => {
     const newProduct = new Product({
       _id: new mongoose.Types.ObjectId(),
-      ...req.body,
+      title: req.body.title,
+      description: req.body.description,
+      shortDescription: req.body.shortDescription,
+      thumbnail: req.body.thumbnail,
+      variants: [...req.body.variants],
     });
     newProduct
       .save()
@@ -30,7 +34,6 @@ controller = {
             product[key] = field;
           }
         }
-
         return product.save();
       })
 
@@ -51,14 +54,11 @@ controller = {
       .catch(next);
   },
   retrieve: (req, res, next) => {
-    const body = req.body;
-    const query = body.query ? body.query : {};
-    const options = body.options ? body.options : { lean: true };
-    const fields = body.fields ? body.fields : null;
-
-    return Product.find(query, fields, options)
-      .populate("featureImage")
+    Product.find()
+      .populate({ path: "thumbnail.imageID" })
+      .populate({ path: "variants.images.imageID" })
       .then((response) => {
+        console.log(response);
         res.status("200").json(response);
       })
       .catch(next);
@@ -67,8 +67,8 @@ controller = {
     const body = req.body;
     const id = req.params.id;
 
-    return Product.findById(id)
-      .populate("featureImage")
+    return Product.findById(id, "-__v")
+
       .then((response) => {
         res.status("200").json(response);
       })

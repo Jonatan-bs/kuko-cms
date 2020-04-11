@@ -10,6 +10,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const dotenv = require("dotenv");
 const init = require("./init/init");
+var cors = require("cors");
 
 var app = express();
 
@@ -18,6 +19,8 @@ dotenv.config({
 });
 
 app.use(logger("dev"));
+app.use(cors());
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -43,7 +46,7 @@ mongoose
   })
   .then((res) => {
     init();
-    console.log("connected to database");
+    console.log(`connected to port ${process.env.PORT}`);
   })
   .catch((err) => console.log(err));
 

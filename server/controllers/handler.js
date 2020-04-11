@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 const User = mongoose.models["user"];
 
 module.exports = {
-  verifyUser: async req => {
+  verifyUser: async (req) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email }).populate("role");
+
     let success = false;
     success = user ? user.comparePassword(password) : false;
     if (success) {
@@ -15,5 +16,5 @@ module.exports = {
       req.session = undefined;
     }
     return { success, user };
-  }
+  },
 };
