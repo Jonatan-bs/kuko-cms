@@ -20,7 +20,7 @@ class Products extends Component {
       <React.Fragment>
         {this.state.products.map((product, index) => {
           return (
-            <Link key={"product" + index} to={"/product/" + product._id}>
+            <Link key={"product" + index} to={"/product/update/" + product._id}>
               <p>{product.title}</p>
             </Link>
           );

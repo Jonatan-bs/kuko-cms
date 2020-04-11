@@ -1,9 +1,16 @@
 import React, { Component } from "react";
 import ImagePicker from "./../../ImageLibraryPicker";
+import ImgLibContext from "./../../ImageLibraryPicker/ImageLibraryPickerContext";
 
 class Products extends Component {
   state = {
-    imagePicker: false,
+    imagePicker: {
+      active: false,
+      path: "",
+      multi: false,
+      gallery: {},
+    },
+
     data: {
       title: "",
       description: "",
@@ -50,35 +57,32 @@ class Products extends Component {
 
     this.setState({ data });
   };
-  imagePicker = (variantIndex) => {
+  imagePicker = (path, gallery, multi, context) => {
     return (e) => {
       e.preventDefault();
-      let name = e.target.name;
-      let gallery;
-      if (variantIndex || variantIndex === 0) {
-        gallery = this.state.data.variants[variantIndex].images;
-      } else {
-        gallery = this.state.data.thumbnail;
-      }
-      let multi = e.target.dataset.multi === "true" ? true : false;
-      let imagePicker =
-        this.state.imagePicker[0] === e.target.name
-          ? false
-          : [name, gallery, multi, variantIndex];
+      let imagePicker = { ...this.state.imagePicker };
+      imagePicker.active = true;
+      imagePicker.gallery = gallery;
+      imagePicker.multi = multi;
+      imagePicker.path = path;
       this.setState({ imagePicker });
     };
   };
-  saveGallery = (nameID) => {
-    return (gallery, variantIndex) => {
-      let data = { ...this.state.data };
-      if (variantIndex || variantIndex === 0) {
-        data.variants[variantIndex][nameID] = gallery;
-      } else {
-        data[nameID] = gallery;
-      }
-      let imagePicker = false;
-      this.setState({ data, imagePicker });
+  saveGallery = (context) => {
+    return (gallery) => {
+      console.log(context);
+      console.log(gallery);
     };
+    // return (gallery, variantIndex) => {
+    //   let data = { ...this.state.data };
+    //   if (variantIndex || variantIndex === 0) {
+    //     data.variants[variantIndex][nameID] = gallery;
+    //   } else {
+    //     data[nameID] = gallery;
+    //   }
+    //   let imagePicker = false;
+    //   this.setState({ data, imagePicker });
+    // };
   };
 
   saveProduct = (e) => {
@@ -104,7 +108,9 @@ class Products extends Component {
       })
       .catch((err) => console.log("err"));
   };
-
+  closeImagePicker = () => {
+    this.setState({ imagePicker: false });
+  };
   render() {
     return (
       <React.Fragment>
@@ -131,15 +137,39 @@ class Products extends Component {
             onChange={this.setValue()}
           />
           <label>Thumbnail</label>
-
-          <button
+          <ImgLibContext.Context.Consumer>
+            {(context) => {
+              return (
+                <button
+                  onClick={context.openImgPicker(
+                    ["data", "thumbnail"],
+                    this.state.data.thumbnail,
+                    false,
+                    this,
+                    (gallery) => {
+                      let data = { ...this.state.data };
+                      data.thumbnail = gallery;
+                      this.setState({ data });
+                    }
+                  )}
+                >
+                  add image
+                </button>
+              );
+            }}
+          </ImgLibContext.Context.Consumer>
+          {/* <button
             name="thumbnail"
             data-multi={false}
-            onClick={this.imagePicker()}
-            file={this.state.data.thumbnail}
+            onClick={this.imagePicker(
+              ["data", "thumbnail"],
+              this.state.data.thumbnail,
+              false,
+              this
+            )}
           >
             add image
-          </button>
+          </button> */}
 
           {this.state.data.variants.map((variant, index) => {
             return (
@@ -163,14 +193,39 @@ class Products extends Component {
                   onChange={this.setValue(index)}
                 />
                 <label>images</label>
-                <button
+                <ImgLibContext.Context.Consumer>
+                  {(context) => {
+                    return (
+                      <button
+                        onClick={context.openImgPicker(
+                          ["data", "thumbnail", index, "images"],
+                          this.state.data.variants[index].images,
+                          true,
+                          this,
+                          (gallery) => {
+                            let data = { ...this.state.data };
+                            data.variants[index].images = gallery;
+                            this.setState({ data });
+                          }
+                        )}
+                      >
+                        add image
+                      </button>
+                    );
+                  }}
+                </ImgLibContext.Context.Consumer>
+                {/* <button
                   name="images"
                   data-multi={true}
-                  onClick={this.imagePicker(index)}
-                  file={this.state.data.variants[index].images}
+                  onClick={this.imagePicker(
+                    ["data", "variants", index, "images"],
+                    this.state.data.variants[index].images,
+                    true,
+                    this
+                  )}
                 >
                   add image
-                </button>
+                </button> */}
                 <label>price</label>
                 <input
                   name="price"
@@ -197,14 +252,16 @@ class Products extends Component {
           <button onClick={this.saveProduct}>Save Product</button>
         </form>
 
-        {this.state.imagePicker ? (
+        {/* {this.state.imagePicker.active ? (
           <ImagePicker
-            saveGallery={this.saveGallery(this.state.imagePicker[0])}
+            data={this.state.imagePicker}
+            saveGallery={this.saveGallery(this)}
             gallery={this.state.imagePicker[1]}
             multi={this.state.imagePicker[2]}
             variantIndex={this.state.imagePicker[3]}
+            closeImagePicker={this.closeImagePicker}
           />
-        ) : null}
+        ) : null} */}
       </React.Fragment>
     );
   }
