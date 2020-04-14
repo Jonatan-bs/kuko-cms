@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { Image, Transformation } from "cloudinary-react";
 
 class Products extends Component {
   state = { products: [] };
@@ -18,10 +19,22 @@ class Products extends Component {
   render() {
     return (
       <React.Fragment>
+        <Link to="/product/create">
+          <li>Add product</li>
+        </Link>
         {this.state.products.map((product, index) => {
           return (
             <Link key={"product" + index} to={"/product/update/" + product._id}>
               <p>{product.title}</p>
+              <Image
+                cloudName="kuko"
+                publicId={product.thumbnail.public_id}
+                urlSuffix={
+                  product.thumbnail.SEOname ? product.thumbnail.SEOname : null
+                }
+              >
+                <Transformation width="200" crop="scale" />
+              </Image>
             </Link>
           );
         })}

@@ -1,19 +1,20 @@
 const mongoose = require("mongoose");
-
+const moveFileToCloudinary = require("./../controllers/cloudinaryHandler");
 const ProductSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
     title: { type: String, required: true, unique: true },
     description: { type: String, required: true, default: "" },
-    shortDescription: { type: String, default: "" },
-    thumbnail: [
-      {
-        caption: { type: String, default: "" },
-        imageID: { type: String, required: true, ref: "imgLibrary" },
-        _id: false,
+    shortDescription: { type: String, required: true, default: "" },
+    thumbnail: {
+      type: {
+        public_id: { type: String, required: false },
+        filename: { type: String, required: true },
+        originalname: { type: String, required: true },
+        path: { type: String, required: true },
       },
-    ],
-
+      required: false,
+    },
     variants: {
       type: [
         {
@@ -23,8 +24,10 @@ const ProductSchema = mongoose.Schema(
           images: {
             type: [
               {
-                caption: { type: String, default: "" },
-                imageID: { type: String, required: true, ref: "imgLibrary" },
+                public_id: { type: String, required: false },
+                filename: { type: String, required: true },
+                originalname: { type: String, required: true },
+                path: { type: String, required: true },
                 _id: false,
               },
             ],
@@ -39,5 +42,32 @@ const ProductSchema = mongoose.Schema(
   },
   { collection: "product", timestamps: true }
 );
+
+ProductSchema.post("validate", async (doc, next) => {
+  try {
+    if (doc.thumbnail) {
+      if (!doc.thumbnail.public_id) {
+        let thumbnail = await moveFileToCloudinary(doc.thumbnail);
+        doc.thumbnail.public_id = thumbnail.public_id;
+      }
+    }
+    if (doc.variants) {
+      for (let i = 0; i < doc.variants.length; i++) {
+        let variant = doc.variants[i];
+        for (let a = 0; a < variant.images.length; a++) {
+          let image = variant.images[a];
+          if (!image.public_id) {
+            let imageData = await moveFileToCloudinary(image);
+            doc.variants[i].images[a].public_id = imageData.public_id;
+          }
+        }
+      }
+    }
+    next();
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+});
 
 mongoose.model("product", ProductSchema);

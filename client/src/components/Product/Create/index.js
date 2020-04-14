@@ -1,21 +1,12 @@
 import React, { Component } from "react";
-import ImagePicker from "./../../ImageLibraryPicker";
-import ImgLibContext from "./../../ImageLibraryPicker/ImageLibraryPickerContext";
-
+import "./Create.css";
 class Products extends Component {
   state = {
-    imagePicker: {
-      active: false,
-      path: "",
-      multi: false,
-      gallery: {},
-    },
-
     data: {
       title: "",
       description: "",
       shortDescription: "",
-      thumbnail: null,
+      thumbnail: "",
       variants: [
         {
           quantity: 0,
@@ -57,38 +48,11 @@ class Products extends Component {
 
     this.setState({ data });
   };
-  imagePicker = (path, gallery, multi, context) => {
-    return (e) => {
-      e.preventDefault();
-      let imagePicker = { ...this.state.imagePicker };
-      imagePicker.active = true;
-      imagePicker.gallery = gallery;
-      imagePicker.multi = multi;
-      imagePicker.path = path;
-      this.setState({ imagePicker });
-    };
-  };
-  saveGallery = (context) => {
-    return (gallery) => {
-      console.log(context);
-      console.log(gallery);
-    };
-    // return (gallery, variantIndex) => {
-    //   let data = { ...this.state.data };
-    //   if (variantIndex || variantIndex === 0) {
-    //     data.variants[variantIndex][nameID] = gallery;
-    //   } else {
-    //     data[nameID] = gallery;
-    //   }
-    //   let imagePicker = false;
-    //   this.setState({ data, imagePicker });
-    // };
-  };
 
   saveProduct = (e) => {
     e.preventDefault();
 
-    let productForm = document.querySelector("form#product");
+    let productForm = document.querySelector("#product");
     let inputs = productForm.querySelectorAll("input");
     for (const input of inputs) {
       input.reportValidity();
@@ -106,21 +70,82 @@ class Products extends Component {
       .then((res) => {
         console.log(res);
       })
-      .catch((err) => console.log("err"));
+      .catch((err) => console.log(err));
   };
-  closeImagePicker = () => {
-    this.setState({ imagePicker: false });
+
+  addImage = (variantIndex) => {
+    return (e) => {
+      let form = e.target.parentNode;
+      const formData = new FormData(form);
+
+      fetch("http://localhost:4000/tempImage", {
+        method: "post",
+        body: formData,
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((res) => {
+          if (res.success) {
+            this.setValueImg(variantIndex, res.data);
+          } else {
+            console.log(res);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
   };
+
+  setValueImg = (variantIndex, imgData) => {
+    const data = { ...this.state.data };
+    if (variantIndex || variantIndex === 0) {
+      data.variants[variantIndex]["images"].push(imgData);
+    } else {
+      data["thumbnail"] = imgData;
+    }
+    this.setState({ data });
+  };
+
+  removeImg(path, variantIndex, imgIndex) {
+    return () => {
+      fetch("http://localhost:4000/tempImage/remove", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ path }),
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.success) {
+            if (variantIndex || variantIndex === 0) {
+              let data = { ...this.state.data };
+              data.variants[variantIndex].images.splice(imgIndex, 1);
+              this.setState({ data });
+            } else {
+              let data = { ...this.state.data };
+              data.thumbnail = "";
+              this.setState({ data });
+            }
+          }
+        })
+        .catch((err) => console.log(err));
+    };
+  }
+
   render() {
     return (
       <React.Fragment>
-        <form id="product">
+        <div id="product">
           <label>Title</label>
           <input
             type="text"
             name="title"
             value={this.state.data.title}
             onChange={this.setValue()}
+            required
           />
           <label>Description</label>
           <input
@@ -128,6 +153,7 @@ class Products extends Component {
             name="description"
             value={this.state.data.description}
             onChange={this.setValue()}
+            required
           />
           <label>Short Description</label>
           <input
@@ -135,41 +161,29 @@ class Products extends Component {
             name="shortDescription"
             value={this.state.data.shortDescription}
             onChange={this.setValue()}
+            required
           />
           <label>Thumbnail</label>
-          <ImgLibContext.Context.Consumer>
-            {(context) => {
-              return (
-                <button
-                  onClick={context.openImgPicker(
-                    ["data", "thumbnail"],
-                    this.state.data.thumbnail,
-                    false,
-                    this,
-                    (gallery) => {
-                      let data = { ...this.state.data };
-                      data.thumbnail = gallery;
-                      this.setState({ data });
-                    }
-                  )}
+          <form>
+            <div className="tempImgWrap">
+              {this.state.data.thumbnail ? (
+                <div
+                  className="tempImg"
+                  style={{
+                    backgroundImage:
+                      "url(http://localhost:4000/uploads/" +
+                      this.state.data.thumbnail.filename +
+                      ")",
+                  }}
                 >
-                  add image
-                </button>
-              );
-            }}
-          </ImgLibContext.Context.Consumer>
-          {/* <button
-            name="thumbnail"
-            data-multi={false}
-            onClick={this.imagePicker(
-              ["data", "thumbnail"],
-              this.state.data.thumbnail,
-              false,
-              this
-            )}
-          >
-            add image
-          </button> */}
+                  <p onClick={this.removeImg(this.state.data.thumbnail.path)}>
+                    Remove image
+                  </p>
+                </div>
+              ) : null}
+            </div>
+            <input type="file" name="image" onChange={this.addImage()} />
+          </form>
 
           {this.state.data.variants.map((variant, index) => {
             return (
@@ -193,39 +207,41 @@ class Products extends Component {
                   onChange={this.setValue(index)}
                 />
                 <label>images</label>
-                <ImgLibContext.Context.Consumer>
-                  {(context) => {
-                    return (
-                      <button
-                        onClick={context.openImgPicker(
-                          ["data", "thumbnail", index, "images"],
-                          this.state.data.variants[index].images,
-                          true,
-                          this,
-                          (gallery) => {
-                            let data = { ...this.state.data };
-                            data.variants[index].images = gallery;
-                            this.setState({ data });
-                          }
-                        )}
-                      >
-                        add image
-                      </button>
-                    );
-                  }}
-                </ImgLibContext.Context.Consumer>
-                {/* <button
-                  name="images"
-                  data-multi={true}
-                  onClick={this.imagePicker(
-                    ["data", "variants", index, "images"],
-                    this.state.data.variants[index].images,
-                    true,
-                    this
-                  )}
-                >
-                  add image
-                </button> */}
+                <form>
+                  <div className="tempImgWrap">
+                    {this.state.data.variants[index].images.map(
+                      (image, imgIndex) => {
+                        return (
+                          <div
+                            className="tempImg"
+                            key={"tempImg" + imgIndex}
+                            style={{
+                              backgroundImage:
+                                "url(http://localhost:4000/uploads/" +
+                                image.filename +
+                                ")",
+                            }}
+                          >
+                            <p
+                              onClick={this.removeImg(
+                                image.path,
+                                index,
+                                imgIndex
+                              )}
+                            >
+                              Remove image
+                            </p>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={this.addImage(index)}
+                  />
+                </form>
                 <label>price</label>
                 <input
                   name="price"
@@ -250,18 +266,7 @@ class Products extends Component {
           <button onClick={this.addVariant}>Add variant</button>
 
           <button onClick={this.saveProduct}>Save Product</button>
-        </form>
-
-        {/* {this.state.imagePicker.active ? (
-          <ImagePicker
-            data={this.state.imagePicker}
-            saveGallery={this.saveGallery(this)}
-            gallery={this.state.imagePicker[1]}
-            multi={this.state.imagePicker[2]}
-            variantIndex={this.state.imagePicker[3]}
-            closeImagePicker={this.closeImagePicker}
-          />
-        ) : null} */}
+        </div>
       </React.Fragment>
     );
   }

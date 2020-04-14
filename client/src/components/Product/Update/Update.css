@@ -1,0 +1,10 @@
+.tempImg {
+  width: 30%;
+  padding-bottom: 25%;
+  background-size: cover;
+  background-position: center;
+}
+.tempImgWrap {
+  display: flex;
+  flex-wrap: wrap;
+}

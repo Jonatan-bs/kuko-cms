@@ -1,31 +1,10 @@
 const express = require("express");
-const multer = require("multer"); // Handle file uploads
+// const multer = require("multer"); // Handle file uploads
 const router = express.Router();
 const userCtrl = require("../controllers/user");
 const userRoleCtrl = require("../controllers/userRole");
-const imageLibraryCtrl = require("../controllers/imageLibrary");
 const productCtrl = require("../controllers/product");
-
-// MULTER MIDDLEWARE
-const storage = multer.diskStorage({
-  destination(req, file, callback) {
-    callback(null, "public/uploads/");
-  },
-  filename: function (req, file, callback) {
-    callback(null, new Date().toISOString() + file.originalname);
-  },
-});
-
-const fileFilter = (req, file, callback) => {
-  if (file.mimetype == "image/jpeg" || file.mimetype == "image/png") {
-    // Accept file
-    callback(null, true);
-  } else {
-    // reject file
-    callback(null, false);
-  }
-};
-const upload = multer({ storage: storage, fileFilter: fileFilter }); // Handle file uploads
+const imageCtrl = require("../controllers/image");
 
 /////////////////
 //// USERS
@@ -58,21 +37,14 @@ router.post("/userrole/delete/:id", userRoleCtrl.delete);
 router.post("/userrole/update/:id", userRoleCtrl.update);
 
 /////////////////
-//// IMAGE LIBRARY
+//// IMAGES
 /////////////////
 
-// create image
-router.post(
-  "/imageLibrary/create",
-  upload.single("image"),
-  imageLibraryCtrl.create
-);
+// Add temp image to local folder
+router.post("/tempimage", imageCtrl.uploadTemp);
 
-// update image
-router.post("/imageLibrary/update/:id", imageLibraryCtrl.update);
-
-// retrieve images
-router.post("/imageLibrary", imageLibraryCtrl.retrieve);
+// Remove temp image from local folder
+router.post("/tempimage/remove", imageCtrl.removeTemp);
 
 /////////////////
 //// Products
