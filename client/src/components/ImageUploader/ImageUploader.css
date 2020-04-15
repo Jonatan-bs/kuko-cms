@@ -1,0 +1,32 @@
+.tempImgWrap {
+  width: 33.333%;
+}
+
+.tempImg {
+  width: 100%;
+  position: relative;
+  padding-bottom: 100%;
+  background-size: cover;
+  background-position: center;
+}
+.tempImages {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tempImg.loader img {
+  position: absolute;
+  width: 90px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.tempImgWrap input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.removeImg {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
