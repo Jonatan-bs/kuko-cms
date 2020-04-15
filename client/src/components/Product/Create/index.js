@@ -1,5 +1,9 @@
 import React, { Component } from "react";
 import "./Create.css";
+import loadingGif from "./../../../loading.gif";
+import LazyLoadBG from "./../../LazyLoadBG";
+// import ImageUploader from "./../../ImageUploader";
+
 class Products extends Component {
   state = {
     data: {
@@ -7,12 +11,14 @@ class Products extends Component {
       description: "",
       shortDescription: "",
       thumbnail: "",
+      thumbnailLoader: false,
       variants: [
         {
           quantity: 0,
           variantType: "",
           variantValue: "",
           images: [],
+          imagesLoader: false,
           price: 0,
           priceCompare: "",
           weight: 0,
@@ -78,7 +84,11 @@ class Products extends Component {
       let form = e.target.parentNode;
       const formData = new FormData(form);
 
-      fetch("http://localhost:4000/tempImage", {
+      e.target.value = "";
+
+      this.setImgLoader(true, variantIndex);
+
+      fetch("http://localhost:4000/tempimageCloudinary", {
         method: "post",
         body: formData,
       })
@@ -87,23 +97,47 @@ class Products extends Component {
         })
         .then((res) => {
           if (res.success) {
-            this.setValueImg(variantIndex, res.data);
+            let src =
+              "https://res.cloudinary.com/kuko/image/upload/w_400/" +
+              res.public_id;
+
+            const imageLoader = new Image();
+            imageLoader.src = src;
+            imageLoader.onload = () => {
+              this.setImgLoader(false, variantIndex);
+
+              this.setValueImg(variantIndex, res.public_id);
+            };
           } else {
+            this.setImgLoader(false, variantIndex);
+
             console.log(res);
           }
         })
         .catch((err) => {
+          this.setImgLoader(false, variantIndex);
           console.log(err);
         });
     };
   };
 
-  setValueImg = (variantIndex, imgData) => {
+  setValueImg = (variantIndex, public_id) => {
     const data = { ...this.state.data };
     if (variantIndex || variantIndex === 0) {
-      data.variants[variantIndex]["images"].push(imgData);
+      data.variants[variantIndex]["images"].push({ public_id });
     } else {
-      data["thumbnail"] = imgData;
+      data["thumbnail"] = { public_id };
+    }
+    this.setState({ data });
+  };
+
+  setImgLoader = (boolean, variantIndex) => {
+    const data = { ...this.state.data };
+
+    if (variantIndex || variantIndex === 0) {
+      data.variants[variantIndex]["imagesLoader"] = boolean;
+    } else {
+      data["thumbnailLoader"] = boolean;
     }
     this.setState({ data });
   };
@@ -135,8 +169,17 @@ class Products extends Component {
     };
   }
 
+  // handleImages = (images) => {
+  //   this.setState({ thumbnail: images });
+  //   console.log(images);
+  // };
+
   render() {
     return (
+      // <ImageUploader
+      //   images={this.state.thumbnail}
+      //   callback={this.handleImages}
+      // />
       <React.Fragment>
         <div id="product">
           <label>Title</label>
@@ -164,25 +207,31 @@ class Products extends Component {
             required
           />
           <label>Thumbnail</label>
-          <form>
+          <form id="thumb">
+            <input type="file" name="image" onChange={this.addImage()} />
             <div className="tempImgWrap">
-              {this.state.data.thumbnail ? (
-                <div
+              {this.state.data.thumbnail && !this.state.data.thumbnailLoader ? (
+                <LazyLoadBG
                   className="tempImg"
-                  style={{
-                    backgroundImage:
-                      "url(http://localhost:4000/uploads/" +
-                      this.state.data.thumbnail.filename +
-                      ")",
-                  }}
+                  transformations="w_400"
+                  style={{}}
+                  public_id={this.state.data.thumbnail.public_id}
                 >
-                  <p onClick={this.removeImg(this.state.data.thumbnail.path)}>
+                  <p
+                    className="removeImg"
+                    onClick={this.removeImg(this.state.data.thumbnail.path)}
+                  >
                     Remove image
                   </p>
+                </LazyLoadBG>
+              ) : null}
+
+              {this.state.data.thumbnailLoader ? (
+                <div className="tempImg loader">
+                  <img src={loadingGif} alt="loading..." />
                 </div>
               ) : null}
             </div>
-            <input type="file" name="image" onChange={this.addImage()} />
           </form>
 
           {this.state.data.variants.map((variant, index) => {
@@ -208,21 +257,24 @@ class Products extends Component {
                 />
                 <label>images</label>
                 <form>
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={this.addImage(index)}
+                  />
                   <div className="tempImgWrap">
                     {this.state.data.variants[index].images.map(
                       (image, imgIndex) => {
-                        return (
-                          <div
-                            className="tempImg"
+                        return image.public_id ? (
+                          <LazyLoadBG
                             key={"tempImg" + imgIndex}
-                            style={{
-                              backgroundImage:
-                                "url(http://localhost:4000/uploads/" +
-                                image.filename +
-                                ")",
-                            }}
+                            className="tempImg"
+                            transformations="w_400"
+                            style={{}}
+                            public_id={image.public_id}
                           >
                             <p
+                              className="removeImg"
                               onClick={this.removeImg(
                                 image.path,
                                 index,
@@ -231,16 +283,17 @@ class Products extends Component {
                             >
                               Remove image
                             </p>
-                          </div>
-                        );
+                          </LazyLoadBG>
+                        ) : null;
                       }
                     )}
+
+                    {this.state.data.variants[index].imagesLoader ? (
+                      <div className="tempImg loader">
+                        <img src={loadingGif} alt="loading..." />
+                      </div>
+                    ) : null}
                   </div>
-                  <input
-                    type="file"
-                    name="image"
-                    onChange={this.addImage(index)}
-                  />
                 </form>
                 <label>price</label>
                 <input

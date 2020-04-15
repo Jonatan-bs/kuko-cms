@@ -17,6 +17,7 @@ class App extends Component {
     auth: true,
     user: {},
   };
+
   // check user auth
   // componentDidMount = () => {
   //   fetch("http://localhost:4000/user/auth")

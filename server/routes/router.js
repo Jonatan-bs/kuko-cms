@@ -1,10 +1,29 @@
 const express = require("express");
-// const multer = require("multer"); // Handle file uploads
 const router = express.Router();
 const userCtrl = require("../controllers/user");
 const userRoleCtrl = require("../controllers/userRole");
 const productCtrl = require("../controllers/product");
 const imageCtrl = require("../controllers/image");
+const multer = require("multer"); // Handle file uploads
+
+// MULTER MIDDLEWARE
+
+const fileFilter = (req, file, callback) => {
+  if (
+    file.mimetype == "image/jpeg" ||
+    file.mimetype == "image/jpg" ||
+    file.mimetype == "image/png"
+  ) {
+    // Accept file
+    return callback(null, true);
+  } else {
+    // reject file
+    return callback(null, false);
+  }
+};
+
+const storage = multer.memoryStorage();
+const multerUploads = multer({ storage, fileFilter }).single("image");
 
 /////////////////
 //// USERS
@@ -42,6 +61,13 @@ router.post("/userrole/update/:id", userRoleCtrl.update);
 
 // Add temp image to local folder
 router.post("/tempimage", imageCtrl.uploadTemp);
+
+// Add image to cloudinary, with temp tag
+router.post(
+  "/tempimageCloudinary",
+  multerUploads,
+  imageCtrl.uploadTempCloudinary
+);
 
 // Remove temp image from local folder
 router.post("/tempimage/remove", imageCtrl.removeTemp);

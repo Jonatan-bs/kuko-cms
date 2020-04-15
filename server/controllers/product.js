@@ -1,9 +1,25 @@
 const mongoose = require("mongoose");
 const Product = mongoose.models["product"];
+const cloudinary = require("cloudinary").v2;
 
 controller = {
   create: async (req, res, next) => {
+    public_ids = [];
+    if (req.body.thumbnail) {
+      public_ids.push(req.body.thumbnail.public_id);
+    }
+    if (req.body.variants.length) {
+      req.body.variants.forEach((variant) => {
+        variant.images.forEach((image) => {
+          public_ids.push(image.public_id);
+        });
+      });
+    }
+
     try {
+      await cloudinary.uploader.remove_tag("temp", public_ids);
+      await cloudinary.api.delete_resources_by_tag("temp");
+
       const newProduct = new Product({
         _id: new mongoose.Types.ObjectId(),
         title: req.body.title,

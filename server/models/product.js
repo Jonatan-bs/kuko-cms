@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const moveFileToCloudinary = require("./../controllers/cloudinaryHandler");
 const ProductSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
@@ -9,9 +8,7 @@ const ProductSchema = mongoose.Schema(
     thumbnail: {
       type: {
         public_id: { type: String, required: false },
-        filename: { type: String, required: true },
-        originalname: { type: String, required: true },
-        path: { type: String, required: true },
+        name: { type: String, required: false },
       },
       required: false,
     },
@@ -25,9 +22,8 @@ const ProductSchema = mongoose.Schema(
             type: [
               {
                 public_id: { type: String, required: false },
-                filename: { type: String, required: true },
-                originalname: { type: String, required: true },
-                path: { type: String, required: true },
+
+                name: { type: String, required: false },
                 _id: false,
               },
             ],
@@ -42,32 +38,5 @@ const ProductSchema = mongoose.Schema(
   },
   { collection: "product", timestamps: true }
 );
-
-ProductSchema.post("validate", async (doc, next) => {
-  try {
-    if (doc.thumbnail) {
-      if (!doc.thumbnail.public_id) {
-        let thumbnail = await moveFileToCloudinary(doc.thumbnail);
-        doc.thumbnail.public_id = thumbnail.public_id;
-      }
-    }
-    if (doc.variants) {
-      for (let i = 0; i < doc.variants.length; i++) {
-        let variant = doc.variants[i];
-        for (let a = 0; a < variant.images.length; a++) {
-          let image = variant.images[a];
-          if (!image.public_id) {
-            let imageData = await moveFileToCloudinary(image);
-            doc.variants[i].images[a].public_id = imageData.public_id;
-          }
-        }
-      }
-    }
-    next();
-  } catch (err) {
-    console.log(err);
-    next(err);
-  }
-});
 
 mongoose.model("product", ProductSchema);
